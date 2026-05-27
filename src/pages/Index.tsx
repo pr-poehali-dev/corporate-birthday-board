@@ -1,5 +1,3 @@
-import { useEffect, useRef } from "react";
-
 const employees = [
   { name: "Аликова Наталья Николаевна", date: "01.06.1978" },
   { name: "Гудкова Светлана Вениаминовна", date: "04.06.1968" },
@@ -20,146 +18,279 @@ const employees = [
   { name: "Битюгова Ирина Эриковна", date: "04.06.1951" },
 ];
 
-const CONFETTI_COLORS = [
-  "#e63329", "#1a2a6c", "#FFD700", "#FF69B4", "#00C9A7",
-  "#FF6B35", "#A855F7", "#22D3EE", "#F59E0B", "#10B981",
+const BADGE_COLORS = [
+  "#e63329", "#1a2a6c", "#2e7d32", "#f57c00", "#6a1b9a",
+  "#00838f", "#c62828", "#283593", "#4e342e", "#37474f",
 ];
 
-const BALLOONS = [
-  { color: "#e63329", x: 4, delay: 0 },
-  { color: "#FFD700", x: 12, delay: 0.8 },
-  { color: "#1a2a6c", x: 82, delay: 0.4 },
-  { color: "#FF69B4", x: 90, delay: 1.2 },
-  { color: "#00C9A7", x: 96, delay: 0.2 },
-  { color: "#e63329", x: 50, delay: 1.5 },
-];
+const SUNBEAM_ANGLES = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
 
-function Balloon({ color, x, delay }: { color: string; x: number; delay: number }) {
+function Sun() {
   return (
-    <div
-      style={{
-        position: "absolute",
-        left: `${x}%`,
-        bottom: "-10px",
-        animation: `floatBalloon 4s ease-in-out ${delay}s infinite alternate`,
-        zIndex: 0,
-        pointerEvents: "none",
-      }}
-    >
-      <svg width="38" height="56" viewBox="0 0 38 56" fill="none">
-        <ellipse cx="19" cy="20" rx="16" ry="19" fill={color} opacity="0.88" />
-        <path d="M19 39 Q21 44 19 48" stroke={color} strokeWidth="1.5" fill="none" />
-        <ellipse cx="13" cy="13" rx="4" ry="6" fill="white" opacity="0.18" />
-        <line x1="19" y1="48" x2="16" y2="56" stroke="#999" strokeWidth="1" />
-        <line x1="19" y1="48" x2="22" y2="56" stroke="#999" strokeWidth="1" />
+    <div style={{
+      position: "absolute",
+      top: "20px",
+      right: "20px",
+      pointerEvents: "none",
+      zIndex: 1,
+    }}>
+      <svg width="68" height="68" viewBox="0 0 68 68" fill="none"
+        style={{ animation: "spinSun 14s linear infinite" }}>
+        {SUNBEAM_ANGLES.map((angle, i) => {
+          const r1 = 20, r2 = i % 2 === 0 ? 30 : 27;
+          const rad = angle * Math.PI / 180;
+          return (
+            <line key={i}
+              x1={34 + Math.cos(rad) * r1} y1={34 + Math.sin(rad) * r1}
+              x2={34 + Math.cos(rad) * r2} y2={34 + Math.sin(rad) * r2}
+              stroke="#FFD700" strokeWidth={i % 2 === 0 ? "3" : "1.8"}
+              strokeLinecap="round" opacity="0.9"
+            />
+          );
+        })}
+        <circle cx="34" cy="34" r="16" fill="#FFD700" />
+        <circle cx="34" cy="34" r="12" fill="#FFA500" opacity="0.45" />
+        <circle cx="29" cy="30" r="3" fill="white" opacity="0.35" />
       </svg>
     </div>
   );
 }
 
-function ConfettiPiece({ i }: { i: number }) {
-  const color = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
-  const left = ((i * 37 + 13) % 97) + 1;
-  const size = 5 + (i % 5);
-  const delay = (i * 0.18) % 4;
-  const duration = 3 + (i % 4);
-  const shape = i % 3;
+function Cloud({ x, y, scaleC, duration, delay }: { x: number; y: number; scaleC: number; duration: number; delay: number }) {
   return (
-    <div
-      style={{
-        position: "absolute",
-        left: `${left}%`,
-        top: `-${size * 2}px`,
-        width: `${size}px`,
-        height: shape === 2 ? `${size * 2}px` : `${size}px`,
-        borderRadius: shape === 0 ? "50%" : shape === 1 ? "2px" : "1px",
-        background: color,
-        opacity: 0.8,
-        animation: `confettiFall ${duration}s linear ${delay}s infinite`,
-        transform: `rotate(${i * 23}deg)`,
-        pointerEvents: "none",
-        zIndex: 1,
-      }}
-    />
+    <div style={{
+      position: "absolute",
+      left: `${x}%`,
+      top: `${y}%`,
+      transform: `scale(${scaleC})`,
+      transformOrigin: "left center",
+      animation: `driftCloud ${duration}s linear ${delay}s infinite`,
+      pointerEvents: "none",
+      opacity: 0.5,
+      zIndex: 1,
+    }}>
+      <svg width="100" height="44" viewBox="0 0 100 44" fill="none">
+        <ellipse cx="50" cy="32" rx="44" ry="14" fill="white" />
+        <ellipse cx="34" cy="26" rx="22" ry="18" fill="white" />
+        <ellipse cx="63" cy="24" rx="20" ry="16" fill="white" />
+        <ellipse cx="48" cy="18" rx="18" ry="15" fill="white" />
+      </svg>
+    </div>
   );
 }
 
+function Butterfly({ x, top, delay, scaleB }: { x: number; top: number; delay: number; scaleB: number }) {
+  return (
+    <div style={{
+      position: "absolute",
+      left: `${x}%`,
+      top: `${top}%`,
+      transform: `scale(${scaleB})`,
+      animation: `flyButterfly 7s ease-in-out ${delay}s infinite`,
+      pointerEvents: "none",
+      zIndex: 1,
+    }}>
+      <svg width="30" height="22" viewBox="0 0 30 22" fill="none">
+        <ellipse cx="7" cy="9" rx="6.5" ry="8.5" fill="#FF69B4" opacity="0.8" transform="rotate(-20 7 9)" />
+        <ellipse cx="23" cy="9" rx="6.5" ry="8.5" fill="#FF69B4" opacity="0.8" transform="rotate(20 23 9)" />
+        <ellipse cx="7" cy="15" rx="4.5" ry="5.5" fill="#FFD700" opacity="0.65" transform="rotate(10 7 15)" />
+        <ellipse cx="23" cy="15" rx="4.5" ry="5.5" fill="#FFD700" opacity="0.65" transform="rotate(-10 23 15)" />
+        <line x1="15" y1="4" x2="15" y2="21" stroke="#555" strokeWidth="1.2" />
+        <path d="M15 4 Q12 1 10 2.5" stroke="#555" strokeWidth="1" fill="none" />
+        <path d="M15 4 Q18 1 20 2.5" stroke="#555" strokeWidth="1" fill="none" />
+      </svg>
+    </div>
+  );
+}
+
+function Sunflower({ x, delay, scaleF }: { x: number; delay: number; scaleF: number }) {
+  const petalAngles = [0, 45, 90, 135, 180, 225, 270, 315];
+  return (
+    <div style={{
+      position: "absolute",
+      left: `${x}%`,
+      bottom: "10px",
+      transform: `scale(${scaleF})`,
+      transformOrigin: "bottom center",
+      animation: `sway 3.5s ease-in-out ${delay}s infinite alternate`,
+      pointerEvents: "none",
+      zIndex: 1,
+    }}>
+      <svg width="34" height="54" viewBox="0 0 34 54" fill="none">
+        <rect x="15" y="18" width="4" height="36" rx="2" fill="#388e3c" />
+        <path d="M17 32 Q9 30 7 24" stroke="#388e3c" strokeWidth="2" fill="none" />
+        <ellipse cx="7" cy="22" rx="5.5" ry="3" fill="#43a047" transform="rotate(-25 7 22)" />
+        {petalAngles.map((a, i) => {
+          const rad = a * Math.PI / 180;
+          return (
+            <ellipse key={i}
+              cx={17 + Math.cos(rad) * 8} cy={13 + Math.sin(rad) * 8}
+              rx="3.5" ry="2.2" fill="#FFD700"
+              transform={`rotate(${a} ${17 + Math.cos(rad) * 8} ${13 + Math.sin(rad) * 8})`}
+            />
+          );
+        })}
+        <circle cx="17" cy="13" r="5.5" fill="#5d4037" />
+        <circle cx="17" cy="13" r="3.5" fill="#4e342e" />
+        <circle cx="15" cy="11" r="1" fill="rgba(255,255,255,0.2)" />
+      </svg>
+    </div>
+  );
+}
+
+function Leaf({ i }: { i: number }) {
+  const colors = ["#66BB6A", "#81C784", "#A5D6A7", "#FFD54F", "#8BC34A", "#4CAF50", "#FFCA28"];
+  const color = colors[i % colors.length];
+  const left = ((i * 61 + 9) % 96) + 1;
+  const delay = (i * 0.45) % 6;
+  const duration = 5 + (i % 4);
+  return (
+    <div style={{
+      position: "absolute",
+      left: `${left}%`,
+      top: "-22px",
+      animation: `leafFall ${duration}s ease-in ${delay}s infinite`,
+      pointerEvents: "none",
+      zIndex: 1,
+    }}>
+      <svg width="13" height="17" viewBox="0 0 13 17" fill="none">
+        <path d="M6.5 1 Q12 5 11 11 Q10 16 6.5 17 Q3 16 2 11 Q1 5 6.5 1Z" fill={color} opacity="0.82" />
+        <line x1="6.5" y1="2" x2="6.5" y2="16" stroke="rgba(0,80,0,0.18)" strokeWidth="0.7" />
+        <path d="M6.5 6 Q9 7.5 10 10" stroke="rgba(0,80,0,0.12)" strokeWidth="0.6" fill="none" />
+        <path d="M6.5 10 Q4 11 3 13" stroke="rgba(0,80,0,0.12)" strokeWidth="0.6" fill="none" />
+      </svg>
+    </div>
+  );
+}
+
+const CLOUDS = [
+  { x: -12, y: 8, scaleC: 1, duration: 30, delay: 0 },
+  { x: -20, y: 22, scaleC: 0.65, duration: 24, delay: 8 },
+  { x: -8, y: 4, scaleC: 0.5, duration: 38, delay: 14 },
+];
+
+const BUTTERFLIES = [
+  { x: 6, top: 22, delay: 0, scaleB: 1 },
+  { x: 22, top: 35, delay: 1.5, scaleB: 0.75 },
+  { x: 68, top: 18, delay: 0.7, scaleB: 0.9 },
+  { x: 83, top: 30, delay: 2.1, scaleB: 1.1 },
+  { x: 94, top: 14, delay: 0.4, scaleB: 0.8 },
+];
+
+const SUNFLOWERS = [
+  { x: 1, delay: 0, scaleF: 1 },
+  { x: 8, delay: 0.6, scaleF: 0.8 },
+  { x: 88, delay: 0.3, scaleF: 0.9 },
+  { x: 94, delay: 1.0, scaleF: 1.05 },
+];
+
 export default function Index() {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #e8eeff 0%, #fff8f0 50%, #fff0f5 100%)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "32px 16px",
-        fontFamily: "'Golos Text', sans-serif",
-      }}
-    >
+    <div style={{
+      minHeight: "100vh",
+      background: "linear-gradient(160deg, #e0f7fa 0%, #fffde7 55%, #f1f8e9 100%)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "32px 16px",
+      fontFamily: "'Golos Text', sans-serif",
+    }}>
       <style>{`
-        @keyframes floatBalloon {
-          0% { transform: translateY(0px) rotate(-3deg); }
-          100% { transform: translateY(-22px) rotate(3deg); }
+        @keyframes spinSun {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
-        @keyframes confettiFall {
-          0% { transform: translateY(-20px) rotate(0deg); opacity: 0.9; }
-          100% { transform: translateY(1200px) rotate(720deg); opacity: 0; }
+        @keyframes driftCloud {
+          0% { transform: translateX(0) scale(var(--s,1)); opacity: 0; }
+          5% { opacity: 0.5; }
+          95% { opacity: 0.5; }
+          100% { transform: translateX(900px) scale(var(--s,1)); opacity: 0; }
+        }
+        @keyframes flyButterfly {
+          0%   { transform: translateX(0) translateY(0) scale(1); }
+          20%  { transform: translateX(18px) translateY(-14px) scale(1.05); }
+          40%  { transform: translateX(8px) translateY(-6px) scale(0.97); }
+          60%  { transform: translateX(-14px) translateY(-18px) scale(1.03); }
+          80%  { transform: translateX(-6px) translateY(-8px) scale(1); }
+          100% { transform: translateX(0) translateY(0) scale(1); }
+        }
+        @keyframes sway {
+          0%   { transform: rotate(-4deg) scale(var(--sf, 1)); }
+          100% { transform: rotate(4deg) scale(var(--sf, 1)); }
+        }
+        @keyframes leafFall {
+          0%   { transform: translateY(-10px) rotate(0deg); opacity: 0.9; }
+          100% { transform: translateY(1150px) rotate(540deg); opacity: 0; }
         }
         @keyframes shimmer {
-          0% { background-position: -200% center; }
+          0%   { background-position: -200% center; }
           100% { background-position: 200% center; }
         }
-        @keyframes pulse-star {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.3); opacity: 0.7; }
+        @keyframes pulse-elem {
+          0%, 100% { transform: scale(1); opacity: 0.9; }
+          50%       { transform: scale(1.25); opacity: 0.65; }
         }
         @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(24px); }
-          to { opacity: 1; transform: translateY(0); }
+          from { opacity: 0; transform: translateY(28px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
         .row-hover:hover {
-          background: rgba(230,51,41,0.06) !important;
+          background: rgba(46,125,50,0.07) !important;
           transition: background 0.2s;
         }
       `}</style>
 
       {/* А4 лист */}
-      <div
-        style={{
-          width: "794px",
-          minHeight: "1123px",
-          background: "#fff",
-          boxShadow: "0 8px 60px rgba(26,42,108,0.18), 0 2px 12px rgba(0,0,0,0.08)",
-          borderRadius: "4px",
-          position: "relative",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          animation: "fadeInUp 0.6s ease both",
-        }}
-      >
-        {/* Конфетти */}
-        {Array.from({ length: 40 }).map((_, i) => (
-          <ConfettiPiece key={i} i={i} />
-        ))}
+      <div style={{
+        width: "794px",
+        minHeight: "1123px",
+        background: "#fff",
+        boxShadow: "0 10px 64px rgba(46,125,50,0.14), 0 2px 14px rgba(0,0,0,0.07)",
+        borderRadius: "6px",
+        position: "relative",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        animation: "fadeInUp 0.65s ease both",
+      }}>
 
-        {/* Верхняя полоса */}
+        {/* Облака */}
+        {CLOUDS.map((c, i) => <Cloud key={i} {...c} />)}
+
+        {/* Бабочки */}
+        {BUTTERFLIES.map((b, i) => <Butterfly key={i} {...b} />)}
+
+        {/* Летящие листья */}
+        {Array.from({ length: 18 }).map((_, i) => <Leaf key={i} i={i} />)}
+
+        {/* Солнце */}
+        <Sun />
+
+        {/* Верхняя полоса — летний градиент */}
         <div style={{
           height: "10px",
-          background: "linear-gradient(90deg, #1a2a6c, #e63329, #FFD700, #e63329, #1a2a6c)",
+          background: "linear-gradient(90deg, #1a2a6c, #2e7d32, #FFD700, #e63329, #2e7d32, #1a2a6c)",
           backgroundSize: "200% auto",
-          animation: "shimmer 3s linear infinite",
+          animation: "shimmer 4s linear infinite",
           flexShrink: 0,
+          position: "relative",
+          zIndex: 3,
         }} />
 
-        {/* Шары снизу */}
-        <div style={{ position: "absolute", bottom: 10, left: 0, right: 0, height: "80px", overflow: "hidden", zIndex: 0 }}>
-          {BALLOONS.map((b, i) => <Balloon key={i} {...b} />)}
+        {/* Подсолнухи снизу */}
+        <div style={{ position: "absolute", bottom: 10, left: 0, right: 0, height: "80px", zIndex: 2, pointerEvents: "none" }}>
+          {SUNFLOWERS.map((f, i) => <Sunflower key={i} {...f} />)}
         </div>
 
         {/* Контент */}
-        <div style={{ flex: 1, padding: "36px 52px 96px", display: "flex", flexDirection: "column", position: "relative", zIndex: 2 }}>
+        <div style={{
+          flex: 1,
+          padding: "36px 52px 100px",
+          display: "flex",
+          flexDirection: "column",
+          position: "relative",
+          zIndex: 4,
+        }}>
 
           {/* Логотип */}
           <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: "28px" }}>
@@ -170,44 +301,42 @@ export default function Index() {
             />
           </div>
 
-          {/* Заголовочная секция */}
+          {/* Hero-блок */}
           <div style={{
-            background: "linear-gradient(135deg, #1a2a6c 0%, #2d3f8f 60%, #e63329 100%)",
-            borderRadius: "16px",
+            background: "linear-gradient(135deg, #1a2a6c 0%, #1565c0 50%, #2e7d32 100%)",
+            borderRadius: "18px",
             padding: "32px 40px",
             marginBottom: "28px",
             position: "relative",
             overflow: "hidden",
             textAlign: "center",
           }}>
-            {/* Декоративные звёзды слева */}
-            {["⭐", "🌟", "✨", "🎉", "🎊"].map((s, i) => (
+            {/* Летние символы слева */}
+            {["☀️", "🌻", "🦋", "🌿", "🍀"].map((s, i) => (
               <span key={i} style={{
                 position: "absolute",
-                fontSize: i % 2 === 0 ? "22px" : "16px",
-                top: `${10 + (i * 17) % 60}%`,
-                left: `${3 + i * 5}%`,
-                animation: `pulse-star ${1.5 + i * 0.4}s ease-in-out infinite`,
-                animationDelay: `${i * 0.3}s`,
-                opacity: 0.7,
+                fontSize: i % 2 === 0 ? "20px" : "15px",
+                top: `${12 + (i * 16) % 62}%`,
+                left: `${2 + i * 5}%`,
+                animation: `pulse-elem ${1.6 + i * 0.4}s ease-in-out ${i * 0.3}s infinite`,
+                opacity: 0.75,
               }}>{s}</span>
             ))}
-            {/* Декоративные звёзды справа */}
-            {["🎈", "🎁", "🎂", "🎀"].map((s, i) => (
+            {/* Летние символы справа */}
+            {["🌺", "🎂", "🌸", "🍃"].map((s, i) => (
               <span key={i} style={{
                 position: "absolute",
-                fontSize: "18px",
-                top: `${15 + (i * 21) % 55}%`,
-                right: `${3 + i * 6}%`,
-                animation: `pulse-star ${1.8 + i * 0.3}s ease-in-out infinite`,
-                animationDelay: `${i * 0.2}s`,
-                opacity: 0.65,
+                fontSize: "17px",
+                top: `${18 + (i * 19) % 56}%`,
+                right: `${2 + i * 6}%`,
+                animation: `pulse-elem ${1.9 + i * 0.3}s ease-in-out ${i * 0.25}s infinite`,
+                opacity: 0.7,
               }}>{s}</span>
             ))}
 
             <div style={{
-              fontSize: "13px",
-              color: "rgba(255,255,255,0.75)",
+              fontSize: "12px",
+              color: "rgba(255,255,255,0.72)",
               fontFamily: "'Montserrat', sans-serif",
               fontWeight: 600,
               letterSpacing: "4px",
@@ -220,13 +349,13 @@ export default function Index() {
             <h1 style={{
               fontFamily: "'Montserrat', sans-serif",
               fontWeight: 900,
-              fontSize: "34px",
+              fontSize: "32px",
               color: "#fff",
-              lineHeight: 1.1,
+              lineHeight: 1.15,
               margin: "0 0 8px",
-              textShadow: "0 2px 12px rgba(0,0,0,0.25)",
+              textShadow: "0 2px 14px rgba(0,0,0,0.3)",
             }}>
-              🎂 Поздравляем именинников
+              🌻 Поздравляем именинников
             </h1>
 
             <div style={{
@@ -251,40 +380,40 @@ export default function Index() {
               marginTop: "8px",
               letterSpacing: "1px",
             }}>
-              Счастья, здоровья и профессиональных успехов! 🌟
+              Тёплого лета, здоровья и профессиональных успехов! ☀️
             </div>
           </div>
 
           {/* Таблица */}
           <div style={{
             flex: 1,
-            background: "linear-gradient(180deg, #f8f9ff 0%, #fff8f0 100%)",
-            borderRadius: "12px",
+            background: "linear-gradient(180deg, #f9fff5 0%, #fffde7 100%)",
+            borderRadius: "14px",
             overflow: "hidden",
-            border: "2px solid rgba(26,42,108,0.1)",
+            border: "2px solid rgba(46,125,50,0.13)",
           }}>
-            {/* Шапка таблицы */}
+            {/* Шапка */}
             <div style={{
               display: "grid",
               gridTemplateColumns: "1fr auto",
-              background: "linear-gradient(90deg, #1a2a6c, #2d3f8f)",
-              padding: "12px 24px",
+              background: "linear-gradient(90deg, #2e7d32, #388e3c)",
+              padding: "13px 24px",
               gap: "16px",
             }}>
               <div style={{
                 fontFamily: "'Montserrat', sans-serif",
                 fontWeight: 700,
-                fontSize: "12px",
-                color: "rgba(255,255,255,0.9)",
-                letterSpacing: "2px",
+                fontSize: "11px",
+                color: "rgba(255,255,255,0.92)",
+                letterSpacing: "2.5px",
                 textTransform: "uppercase",
               }}>Сотрудник</div>
               <div style={{
                 fontFamily: "'Montserrat', sans-serif",
                 fontWeight: 700,
-                fontSize: "12px",
-                color: "rgba(255,255,255,0.9)",
-                letterSpacing: "2px",
+                fontSize: "11px",
+                color: "rgba(255,255,255,0.92)",
+                letterSpacing: "2.5px",
                 textTransform: "uppercase",
                 whiteSpace: "nowrap",
               }}>Дата рождения</div>
@@ -301,9 +430,9 @@ export default function Index() {
                   padding: "11px 24px",
                   gap: "16px",
                   borderBottom: i < employees.length - 1
-                    ? "1px solid rgba(26,42,108,0.07)"
+                    ? "1px solid rgba(46,125,50,0.08)"
                     : "none",
-                  background: i % 2 === 0 ? "transparent" : "rgba(26,42,108,0.025)",
+                  background: i % 2 === 0 ? "transparent" : "rgba(46,125,50,0.03)",
                   alignItems: "center",
                 }}
               >
@@ -312,14 +441,14 @@ export default function Index() {
                     width: "24px",
                     height: "24px",
                     borderRadius: "50%",
-                    background: `${CONFETTI_COLORS[i % CONFETTI_COLORS.length]}22`,
-                    border: `2px solid ${CONFETTI_COLORS[i % CONFETTI_COLORS.length]}`,
+                    background: `${BADGE_COLORS[i % BADGE_COLORS.length]}18`,
+                    border: `2px solid ${BADGE_COLORS[i % BADGE_COLORS.length]}`,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: "10px",
                     fontWeight: 700,
-                    color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+                    color: BADGE_COLORS[i % BADGE_COLORS.length],
                     flexShrink: 0,
                     fontFamily: "'Montserrat', sans-serif",
                   }}>
@@ -329,7 +458,7 @@ export default function Index() {
                     fontFamily: "'Golos Text', sans-serif",
                     fontWeight: 500,
                     fontSize: "13.5px",
-                    color: "#1a2a6c",
+                    color: "#1a2a3c",
                   }}>
                     {emp.name}
                   </span>
@@ -337,14 +466,14 @@ export default function Index() {
                 <div style={{
                   fontFamily: "'Montserrat', sans-serif",
                   fontWeight: 600,
-                  fontSize: "13px",
-                  color: "#e63329",
+                  fontSize: "12.5px",
+                  color: "#2e7d32",
                   whiteSpace: "nowrap",
-                  background: "rgba(230,51,41,0.08)",
-                  padding: "4px 10px",
+                  background: "rgba(46,125,50,0.10)",
+                  padding: "4px 11px",
                   borderRadius: "20px",
                 }}>
-                  🎂 {emp.date}
+                  🌻 {emp.date}
                 </div>
               </div>
             ))}
@@ -353,23 +482,23 @@ export default function Index() {
           {/* Нижняя декорация */}
           <div style={{
             textAlign: "center",
-            marginTop: "20px",
-            fontSize: "22px",
-            letterSpacing: "8px",
+            marginTop: "18px",
+            fontSize: "20px",
+            letterSpacing: "7px",
           }}>
-            🎈 🎉 🎊 🌟 🎁 🎀 🎈
+            ☀️ 🌻 🦋 🌿 🌸 🍃 🌺
           </div>
         </div>
 
         {/* Нижняя полоса */}
         <div style={{
           height: "10px",
-          background: "linear-gradient(90deg, #e63329, #1a2a6c, #FFD700, #1a2a6c, #e63329)",
+          background: "linear-gradient(90deg, #2e7d32, #1a2a6c, #FFD700, #e63329, #2e7d32)",
           backgroundSize: "200% auto",
-          animation: "shimmer 3s linear infinite",
+          animation: "shimmer 4s linear infinite",
           flexShrink: 0,
           position: "relative",
-          zIndex: 3,
+          zIndex: 5,
         }} />
       </div>
     </div>

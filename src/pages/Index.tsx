@@ -490,6 +490,15 @@ export default function Index() {
           }}>
             ☀️ 🌻 🦋 🌿 🌸 🍃 🌺
           </div>
+
+          {/* Логотип снизу */}
+          <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
+            <img
+              src="https://cdn.poehali.dev/files/78f7c97c-fddb-4612-8022-43c9e34d60c6.jpg"
+              alt="Энерго Технология"
+              style={{ height: "52px", objectFit: "contain", opacity: 0.85 }}
+            />
+          </div>
         </div>
 
         {/* Нижняя полоса */}
